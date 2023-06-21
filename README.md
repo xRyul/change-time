@@ -9,12 +9,13 @@
 
 ## Install packages
 ```
-pip install PyExifTool pyqt5 pyinstaller
+pip install PyExifTool pyqt5
 ```
 
 ### Optional
 Create an .exe executable with all packages inside. 
 ```
+pip install pyinstaller
 pyinstaller --onefile --noconsole .\Change_time.py
 ```
 
