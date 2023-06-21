@@ -1,3 +1,7 @@
+
+![Alt text](./images/Example1.gif)
+
+
 # How to
 
 ## Install Python
