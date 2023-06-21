@@ -3,7 +3,7 @@
 
 ---
 
-Incrimentally change date/time of all files in all subfolders. 
+Incrementally change date/time of all files in all subfolders. 
 
 Changes File Modification Date, Date/Time Digitized, XMP: Metadata Date/time, XMP: Modification Date/time, EXIF: MOdification date/time.
 
