@@ -1,8 +1,16 @@
 
 ![Alt text](./images/Example1.gif)
 
+---
+
+Incrimentally change date/time of all files in all subfolders. 
+
+Changes File Modification Date, Date/Time Digitized, XMP: Metadata Date/time, XMP: Modification Date/time, EXIF: MOdification date/time.
+
+It doesn't change **Date Taken**. 
 
 # How to
+Incrementation is calcualted based on subfolders. Thus, for it to wrok, following subfolders must be created: `12, 13, 15, 20, 22, 24, 36`. 
 
 ## Install Python
 1. Create new folder on the Desktop: "/change-time"
