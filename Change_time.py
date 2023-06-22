@@ -152,7 +152,12 @@ def change_modification_date(
         for subfolder in subfolders:
             # Get the list of image files in the subfolder and sort them by filename
             subfolder_path = os.path.join(wipPath, subfolder)
-            image_files = [os.path.join(subfolder_path, f) for f in os.listdir(subfolder_path) if f.endswith(('.jpg', '.jpeg', '.png', '.psd', '.tif', '.tiff'))]
+            
+            try:
+                image_files = [os.path.join(subfolder_path, f) for f in os.listdir(subfolder_path) if f.endswith(('.jpg', '.jpeg', '.png', '.psd', '.tif', '.tiff'))]
+            except FileNotFoundError:
+                # If the subfolder does not exist, skip it
+                continue
             
             # Check if there are any image files in the subfolder
             if len(image_files) == 0:
@@ -206,7 +211,6 @@ def change_modification_date(
         # Show a completion message
         start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S')
         end_time_str = prev_modification_time.strftime('%Y-%m-%d %H:%M:%S')
-
         file_label.setText(f" Completed!\n\n Time of the 1st file: {start_time_str}\n Time of the last file: {end_time_str}")
 
 # Create an instance of the MainWindow class and show it
