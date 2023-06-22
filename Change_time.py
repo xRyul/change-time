@@ -2,9 +2,23 @@ import os
 import datetime
 from datetime import timedelta
 import exiftool
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QDialog, QCalendarWidget, QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QProgressBar
+import logging
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton, QFileDialog, QDialog, QCalendarWidget, QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QProgressBar, QTextEdit
 from PyQt5.QtGui import QFont, QPalette, QColor
 # from qt_material import apply_stylesheet
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+class QTextEditLogger(logging.Handler):
+    def __init__(self, parent):
+        super().__init__()
+        self.widget = QTextEdit(parent)
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.append(msg)
+
 
 class CalendarDialog(QDialog):
     def __init__(self, parent=None):
@@ -83,6 +97,20 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(close_button)
         
         main_layout.addLayout(button_layout)
+        
+        # Create an instance of the QTextEditLogger class
+        log_widget = QTextEditLogger(self)
+
+        # Set the log level and format
+        log_widget.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        log_widget.setFormatter(formatter)
+
+        # Add the log widget as a handler for the root logger
+        logging.getLogger().addHandler(log_widget)
+
+        # Add the log widget to the main layout
+        main_layout.addWidget(log_widget.widget)
 
         # Add a QProgressBar widget
         self.progress_bar = QProgressBar(self)
@@ -141,8 +169,12 @@ def change_modification_date(
     progress_bar: QProgressBar,
     file_label: QLabel
 ):
+    
+    logging.debug(f"Entering change_modification_date with wipPath={wipPath}, subfolders={subfolders}, start_time={start_time}, selected_date={selected_date}")
+
     # Initialize ExifTool
     with exiftool.ExifTool() as et:
+        logging.debug("Initialized ExifTool")
         # Create a list to store all image files from all subfolders
         all_image_files = []
         
@@ -152,11 +184,14 @@ def change_modification_date(
         for subfolder in subfolders:
             # Get the list of image files in the subfolder and sort them by filename
             subfolder_path = os.path.join(wipPath, subfolder)
+            logging.debug(f"Processing subfolder {subfolder} at path {subfolder_path}")
             
             try:
                 image_files = [os.path.join(subfolder_path, f) for f in os.listdir(subfolder_path) if f.endswith(('.jpg', '.jpeg', '.png', '.psd', '.tif', '.tiff'))]
+                logging.debug(f"Found {len(image_files)} image files in subfolder {subfolder}")
             except FileNotFoundError:
                 # If the subfolder does not exist, skip it
+                logging.warning(f"Subfolder {subfolder} not found at path {subfolder_path}")
                 continue
             
             # Check if there are any image files in the subfolder
@@ -169,12 +204,14 @@ def change_modification_date(
             
             # Add the time_per_image to the dictionary
             time_per_image_dict[subfolder] = time_per_image
+            logging.debug(f"Calculated time_per_image={time_per_image} for subfolder {subfolder}")
             
             # Add the image files to the all_image_files list
             all_image_files.extend(image_files)
 
         # Sort all image files by filename
         all_image_files.sort(key=get_numeric_part)
+        logging.debug(f"Sorted all {len(all_image_files)} image files by filename")
 
         # Set the range of the progress bar
         progress_bar.setRange(0, len(all_image_files))
@@ -193,15 +230,21 @@ def change_modification_date(
             
             new_modification_time_str = new_modification_time.strftime('%Y:%m:%d %H:%M:%S')
             
-            et.execute('-overwrite_original',
-                       f'-FileModifyDate={new_modification_time_str}',
-                       f'-DateTimeDigitized={new_modification_time_str}',
-                       f'-XMP:MetadataDate={new_modification_time_str}',
-                       f'-XMP:ModifyDate={new_modification_time_str}',
-                       f'-EXIF:ModifyDate={new_modification_time_str}',
-                       '-XMP-xmpMM:all=',
-                       '-Photoshop:all=',
-                       image_file)
+            try:
+                et.execute('-overwrite_original',
+                        f'-FileModifyDate={new_modification_time_str}',
+                        f'-DateTimeDigitized={new_modification_time_str}',
+                        f'-XMP:MetadataDate={new_modification_time_str}',
+                        f'-XMP:ModifyDate={new_modification_time_str}',
+                        f'-EXIF:ModifyDate={new_modification_time_str}',
+                        '-XMP-xmpMM:all=',
+                        '-Photoshop:all=',
+                        image_file)
+                logging.debug(f"Modified metadata of image file {image_file} with new_modification_time={new_modification_time_str}")
+            except Exception as e:
+                logging.error(f"Error processing {image_file}: {str(e)}")
+                file_label.setText(f"Error processing {os.path.basename(image_file)}: {str(e)}")
+                break
 
             prev_modification_time = new_modification_time
 
@@ -221,6 +264,7 @@ def change_modification_date(
         start_time_str = start_time.strftime('%Y-%m-%d %H:%M:%S')
         end_time_str = prev_modification_time.strftime('%Y-%m-%d %H:%M:%S')
         file_label.setText(f" Completed!\n\n Time of the 1st file: {start_time_str}\n Time of the last file: {end_time_str}")
+        logging.debug(f"Completed change_modification_date with start_time={start_time_str} and end_time={end_time_str}")
 
 # Create an instance of the MainWindow class and show it
 app = QApplication([])
