@@ -20,6 +20,13 @@ Incrementation is calcualted based on subfolders. Thus, for it to wrok, followin
 5. Activate the environment. `my_env\scripts\activate`
 
 ## Install packages
+
+```
+pip install -r .\requirements.txt
+```
+
+or
+
 ```
 pip install PyExifTool pyqt5
 ```
