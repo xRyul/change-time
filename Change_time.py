@@ -192,8 +192,17 @@ def change_modification_date(
             new_modification_time = prev_modification_time + timedelta(seconds=time_per_image)
             
             new_modification_time_str = new_modification_time.strftime('%Y:%m:%d %H:%M:%S')
-            et.execute('-overwrite_original', f'-FileModifyDate={new_modification_time_str}', f'-DateTimeDigitized={new_modification_time_str}', f'-XMP:MetadataDate={new_modification_time_str}', f'-XMP:ModifyDate={new_modification_time_str}', f'-EXIF:ModifyDate={new_modification_time_str}', image_file)
             
+            et.execute('-overwrite_original',
+                       f'-FileModifyDate={new_modification_time_str}',
+                       f'-DateTimeDigitized={new_modification_time_str}',
+                       f'-XMP:MetadataDate={new_modification_time_str}',
+                       f'-XMP:ModifyDate={new_modification_time_str}',
+                       f'-EXIF:ModifyDate={new_modification_time_str}',
+                       '-XMP-xmpMM:all=',
+                       '-Photoshop:all=',
+                       image_file)
+
             prev_modification_time = new_modification_time
 
             # Update the value of the progress bar
